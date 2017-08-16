@@ -332,9 +332,16 @@ public class SwipeToLoadLayout extends ViewGroup {
             // no child return
             return;
         } else if (0 < childNum && childNum < 4) {
-            mHeaderView = findViewById(R.id.swipe_refresh_header);
-            mTargetView = findViewById(R.id.swipe_target);
-            mFooterView = findViewById(R.id.swipe_load_more_footer);
+            for (int i = 0; i < childNum; i++) {
+                View view = getChildAt(i);
+                if (view instanceof SwipeRefreshTrigger) {
+                    mHeaderView = view;
+                }else if (view instanceof SwipeLoadMoreTrigger) {
+                    mFooterView = view;
+                }else {
+                    mTargetView = view;
+                }
+            }
         } else {
             // more than three children: unsupported!
             throw new IllegalStateException("Children num must equal or less than 3");
