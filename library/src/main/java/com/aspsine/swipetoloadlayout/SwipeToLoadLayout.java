@@ -2,8 +2,10 @@ package com.aspsine.swipetoloadlayout;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.ScrollView;
 import android.widget.Scroller;
 
 /**
@@ -336,9 +339,9 @@ public class SwipeToLoadLayout extends ViewGroup {
                 View view = getChildAt(i);
                 if (view instanceof SwipeRefreshTrigger) {
                     mHeaderView = view;
-                }else if (view instanceof SwipeLoadMoreTrigger) {
+                } else if (view instanceof SwipeLoadMoreTrigger) {
                     mFooterView = view;
-                }else {
+                } else {
                     mTargetView = view;
                 }
             }
@@ -545,6 +548,16 @@ public class SwipeToLoadLayout extends ViewGroup {
                 mActivePointerId = MotionEventCompat.getPointerId(event, 0);
                 return true;
 
+            case MotionEvent.ACTION_POINTER_DOWN: {
+                final int pointerIndex = MotionEventCompat.getActionIndex(event);
+                final int pointerId = MotionEventCompat.getPointerId(event, pointerIndex);
+                if (pointerId != INVALID_POINTER) {
+                    mActivePointerId = pointerId;
+                }
+                mInitDownY = mLastY = getMotionEventY(event, mActivePointerId);
+                mInitDownX = mLastX = getMotionEventX(event, mActivePointerId);
+                break;
+            }
             case MotionEvent.ACTION_MOVE:
                 // take over the ACTION_MOVE event from SwipeToLoadLayout#onInterceptTouchEvent()
                 // if condition is true
@@ -603,16 +616,6 @@ public class SwipeToLoadLayout extends ViewGroup {
                 }
                 return true;
 
-            case MotionEvent.ACTION_POINTER_DOWN: {
-                final int pointerIndex = MotionEventCompat.getActionIndex(event);
-                final int pointerId = MotionEventCompat.getPointerId(event, pointerIndex);
-                if (pointerId != INVALID_POINTER) {
-                    mActivePointerId = pointerId;
-                }
-                mInitDownY = mLastY = getMotionEventY(event, mActivePointerId);
-                mInitDownX = mLastX = getMotionEventX(event, mActivePointerId);
-                break;
-            }
             case MotionEvent.ACTION_POINTER_UP: {
                 onSecondaryPointerUp(event);
                 mInitDownY = mLastY = getMotionEventY(event, mActivePointerId);
@@ -1055,41 +1058,6 @@ public class SwipeToLoadLayout extends ViewGroup {
             headerView.layout(headerLeft, headerTop, headerRight, headerBottom);
         }
 
-
-        // layout target
-        if (mTargetView != null) {
-            final View targetView = mTargetView;
-            MarginLayoutParams lp = (MarginLayoutParams) targetView.getLayoutParams();
-            final int targetLeft = paddingLeft + lp.leftMargin;
-            final int targetTop;
-
-            switch (mStyle) {
-                case STYLE.CLASSIC:
-                    // classic
-                    targetTop = paddingTop + lp.topMargin + mTargetOffset;
-                    break;
-                case STYLE.ABOVE:
-                    // above
-                    targetTop = paddingTop + lp.topMargin;
-                    break;
-                case STYLE.BLEW:
-                    // classic
-                    targetTop = paddingTop + lp.topMargin + mTargetOffset;
-                    break;
-                case STYLE.SCALE:
-                    // classic
-                    targetTop = paddingTop + lp.topMargin + mTargetOffset;
-                    break;
-                default:
-                    // classic
-                    targetTop = paddingTop + lp.topMargin + mTargetOffset;
-                    break;
-            }
-            final int targetRight = targetLeft + targetView.getMeasuredWidth();
-            final int targetBottom = targetTop + targetView.getMeasuredHeight();
-            targetView.layout(targetLeft, targetTop, targetRight, targetBottom);
-        }
-
         // layout footer
         if (mFooterView != null) {
             final View footerView = mFooterView;
@@ -1123,6 +1091,38 @@ public class SwipeToLoadLayout extends ViewGroup {
 
             footerView.layout(footerLeft, footerTop, footerRight, footerBottom);
         }
+
+        // layout target
+        if (mTargetView != null) {
+            final View targetView = mTargetView;
+            MarginLayoutParams lp = (MarginLayoutParams) targetView.getLayoutParams();
+            final int targetLeft = paddingLeft + lp.leftMargin;
+            final int targetTop;
+            final int targetBottom;
+            switch (mStyle) {
+                case STYLE.ABOVE:
+                    // above
+                    targetTop = paddingTop + lp.topMargin;
+                    targetBottom = targetTop + targetView.getMeasuredHeight();
+                    break;
+                case STYLE.CLASSIC:
+                case STYLE.BLEW:
+                case STYLE.SCALE:
+                default:
+                    // classic
+                    if (targetView instanceof AbsListView || targetView instanceof RecyclerView || targetView instanceof ScrollView) {
+                        targetTop = mTargetOffset < 0 ? paddingTop + lp.topMargin : paddingTop + lp.topMargin + mTargetOffset;
+                        targetBottom = mTargetOffset < 0 ? targetTop + targetView.getMeasuredHeight() + mTargetOffset : targetTop + targetView.getMeasuredHeight() - mTargetOffset;
+                    } else {
+                        targetTop = paddingTop + lp.topMargin + mTargetOffset;
+                        targetBottom = targetTop + targetView.getMeasuredHeight();
+                    }
+                    break;
+            }
+            final int targetRight = targetLeft + targetView.getMeasuredWidth();
+            targetView.layout(targetLeft, targetTop, targetRight, targetBottom);
+        }
+
 
         if (mStyle == STYLE.CLASSIC
                 || mStyle == STYLE.ABOVE) {
@@ -1238,6 +1238,24 @@ public class SwipeToLoadLayout extends ViewGroup {
         if (mDebug) {
             Log.i(TAG, "mTargetOffset = " + mTargetOffset);
         }
+
+        if (mTargetOffset < 0 && mTargetView instanceof ScrollView){
+            mTargetView.scrollBy(0,-mTargetOffset);
+        }
+
+        if (mTargetOffset < 0 && mTargetView instanceof AbsListView){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                ((AbsListView) mTargetView).scrollListBy(-mTargetOffset);
+            }else {
+                mTargetView.scrollBy(0, (int) -yScrolled);
+            }
+        }
+
+        if (mTargetOffset < 0 && mTargetView instanceof RecyclerView){
+            mTargetView.scrollBy(0,-mTargetOffset);
+        }
+
+
         layoutChildren();
         invalidate();
     }
@@ -1249,21 +1267,17 @@ public class SwipeToLoadLayout extends ViewGroup {
         if (STATUS.isSwipingToRefresh(mStatus)) {
             // simply return
             scrollSwipingToRefreshToDefault();
-
         } else if (STATUS.isSwipingToLoadMore(mStatus)) {
             // simply return
             scrollSwipingToLoadMoreToDefault();
-
         } else if (STATUS.isReleaseToRefresh(mStatus)) {
             // return to header height and perform refresh
             mRefreshCallback.onRelease();
             scrollReleaseToRefreshToRefreshing();
-
         } else if (STATUS.isReleaseToLoadMore(mStatus)) {
             // return to footer height and perform loadMore
             mLoadMoreCallback.onRelease();
             scrollReleaseToLoadMoreToLoadingMore();
-
         }
     }
 
