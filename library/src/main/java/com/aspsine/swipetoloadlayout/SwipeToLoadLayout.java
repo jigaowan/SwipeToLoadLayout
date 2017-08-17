@@ -524,6 +524,13 @@ public class SwipeToLoadLayout extends ViewGroup {
                     // intercept the move action event and pass it to SwipeToLoadLayout#onTouchEvent()
                     return true;
                 }
+
+//                if ((mTargetView instanceof AbsListView || mTargetView instanceof ScrollView || mTargetView instanceof RecyclerView)
+//                        && ((STATUS.isRefreshing(mStatus) && onCheckCanRefresh() && yInitDiff > 0 && moved)
+//                        || (STATUS.isLoadingMore(mStatus) && onCheckCanLoadMore() && yInitDiff < 0 && moved))) {
+//                    return true;
+//                }
+
                 break;
             case MotionEvent.ACTION_POINTER_UP: {
                 onSecondaryPointerUp(event);
@@ -1239,20 +1246,20 @@ public class SwipeToLoadLayout extends ViewGroup {
             Log.i(TAG, "mTargetOffset = " + mTargetOffset);
         }
 
-        if (mTargetOffset < 0 && mTargetView instanceof ScrollView){
-            mTargetView.scrollBy(0,-mTargetOffset);
+        if (yScrolled < 0 && mTargetOffset < 0 && mTargetView instanceof ScrollView) {
+            mTargetView.scrollBy(0, -mTargetOffset);
         }
 
-        if (mTargetOffset < 0 && mTargetView instanceof AbsListView){
+        if (yScrolled < 0 && mTargetOffset < 0 && mTargetView instanceof AbsListView) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 ((AbsListView) mTargetView).scrollListBy(-mTargetOffset);
-            }else {
+            } else {
                 mTargetView.scrollBy(0, (int) -yScrolled);
             }
         }
 
-        if (mTargetOffset < 0 && mTargetView instanceof RecyclerView){
-            mTargetView.scrollBy(0,-mTargetOffset);
+        if (yScrolled < 0 && mTargetOffset < 0 && mTargetView instanceof RecyclerView) {
+            mTargetView.scrollBy(0, -mTargetOffset);
         }
 
 
