@@ -11,7 +11,8 @@
     app:refresh_final_drag_offset="@dimen/refresh_final_offset_google"
     app:refresh_trigger_offset="@dimen/refresh_trigger_offset_google"
     app:load_more_complete_delay_duration="0"
-    app:swipe_style="above">
+    app:head_swipe_style="above"
+    app:foot_swipe_style="above">
 
     <include
         android:id="@id/swipe_refresh_header"

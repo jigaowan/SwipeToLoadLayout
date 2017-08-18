@@ -147,7 +147,13 @@ public class SwipeToLoadLayout extends ViewGroup {
      * <b>ATTRIBUTE:</b>
      * the style default classic
      */
-    private int mStyle = STYLE.CLASSIC;
+    private int mHeadStyle = STYLE.CLASSIC;
+
+    /**
+     * <b>ATTRIBUTE:</b>
+     * the style default classic
+     */
+    private int mFootStyle = STYLE.CLASSIC;
 
     /**
      * <b>ATTRIBUTE:</b>
@@ -269,8 +275,11 @@ public class SwipeToLoadLayout extends ViewGroup {
                 } else if (attr == R.styleable.SwipeToLoadLayout_load_more_enabled) {
                     setLoadMoreEnabled(a.getBoolean(attr, true));
 
-                } else if (attr == R.styleable.SwipeToLoadLayout_swipe_style) {
-                    setSwipeStyle(a.getInt(attr, STYLE.CLASSIC));
+                } else if (attr == R.styleable.SwipeToLoadLayout_head_swipe_style) {
+                    setHeadSwipeStyle(a.getInt(attr, STYLE.CLASSIC));
+
+                } else if (attr == R.styleable.SwipeToLoadLayout_foot_swipe_style) {
+                    setFootSwipeStyle(a.getInt(attr, STYLE.CLASSIC));
 
                 } else if (attr == R.styleable.SwipeToLoadLayout_drag_ratio) {
                     setDragRatio(a.getFloat(attr, DEFAULT_DRAG_RATIO));
@@ -750,8 +759,18 @@ public class SwipeToLoadLayout extends ViewGroup {
      *
      * @param style
      */
-    public void setSwipeStyle(int style) {
-        this.mStyle = style;
+    public void setHeadSwipeStyle(int style) {
+        this.mHeadStyle = style;
+        requestLayout();
+    }
+
+    /**
+     * set the style of the refresh footer
+     *
+     * @param style
+     */
+    public void setFootSwipeStyle(int style) {
+        this.mFootStyle = style;
         requestLayout();
     }
 
@@ -1038,7 +1057,7 @@ public class SwipeToLoadLayout extends ViewGroup {
             MarginLayoutParams lp = (MarginLayoutParams) headerView.getLayoutParams();
             final int headerLeft = paddingLeft + lp.leftMargin;
             final int headerTop;
-            switch (mStyle) {
+            switch (mHeadStyle) {
                 case STYLE.CLASSIC:
                     // classic
                     headerTop = paddingTop + lp.topMargin - mHeaderHeight + mHeaderOffset;
@@ -1071,7 +1090,7 @@ public class SwipeToLoadLayout extends ViewGroup {
             MarginLayoutParams lp = (MarginLayoutParams) footerView.getLayoutParams();
             final int footerLeft = paddingLeft + lp.leftMargin;
             final int footerBottom;
-            switch (mStyle) {
+            switch (mFootStyle) {
                 case STYLE.CLASSIC:
                     // classic
                     footerBottom = height - paddingBottom - lp.bottomMargin + mFooterHeight + mFooterOffset;
@@ -1106,11 +1125,10 @@ public class SwipeToLoadLayout extends ViewGroup {
             final int targetLeft = paddingLeft + lp.leftMargin;
             final int targetTop;
             final int targetBottom;
-            switch (mStyle) {
+            switch (mHeadStyle) {
                 case STYLE.ABOVE:
                     // above
                     targetTop = paddingTop + lp.topMargin;
-                    targetBottom = targetTop + targetView.getMeasuredHeight();
                     break;
                 case STYLE.CLASSIC:
                 case STYLE.BLEW:
@@ -1119,31 +1137,53 @@ public class SwipeToLoadLayout extends ViewGroup {
                     // classic
                     if (targetView instanceof AbsListView || targetView instanceof RecyclerView || targetView instanceof ScrollView) {
                         targetTop = mTargetOffset < 0 ? paddingTop + lp.topMargin : paddingTop + lp.topMargin + mTargetOffset;
-                        targetBottom = mTargetOffset < 0 ? targetTop + targetView.getMeasuredHeight() + mTargetOffset : targetTop + targetView.getMeasuredHeight() - mTargetOffset;
                     } else {
                         targetTop = paddingTop + lp.topMargin + mTargetOffset;
+                    }
+                    break;
+            }
+            switch (mFootStyle) {
+                case STYLE.ABOVE:
+                    // above
+                    targetBottom = targetTop + targetView.getMeasuredHeight();
+                    break;
+                case STYLE.CLASSIC:
+                case STYLE.BLEW:
+                case STYLE.SCALE:
+                default:
+                    // classic
+                    if (targetView instanceof AbsListView || targetView instanceof RecyclerView || targetView instanceof ScrollView) {
+                        targetBottom = mTargetOffset < 0 ? targetTop + targetView.getMeasuredHeight() + mTargetOffset : targetTop + targetView.getMeasuredHeight();
+                    } else {
                         targetBottom = targetTop + targetView.getMeasuredHeight();
                     }
                     break;
             }
             final int targetRight = targetLeft + targetView.getMeasuredWidth();
             targetView.layout(targetLeft, targetTop, targetRight, targetBottom);
+            Log.e(TAG,"targetBottom:"+targetBottom);
         }
 
-
-        if (mStyle == STYLE.CLASSIC
-                || mStyle == STYLE.ABOVE) {
+        if (mHeadStyle == STYLE.CLASSIC
+                || mHeadStyle == STYLE.ABOVE) {
             if (mHeaderView != null) {
                 mHeaderView.bringToFront();
             }
+        }
+
+        if (mFootStyle == STYLE.CLASSIC
+                || mFootStyle == STYLE.ABOVE) {
             if (mFooterView != null) {
                 mFooterView.bringToFront();
             }
-        } else if (mStyle == STYLE.BLEW || mStyle == STYLE.SCALE) {
+        }
+
+        if (mHeadStyle == STYLE.BLEW || mHeadStyle == STYLE.SCALE || mFootStyle == STYLE.BLEW || mFootStyle == STYLE.SCALE) {
             if (mTargetView != null) {
                 mTargetView.bringToFront();
             }
         }
+
     }
 
     private void fixCurrentStatusLayout() {

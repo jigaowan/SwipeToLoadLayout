@@ -43,7 +43,8 @@ public class NavJavaCodeFragment extends BaseNavigationFragment implements OnRef
 
     private LayoutInflater mInflater;
 
-    private int mStyleNum;
+    private int mHeadStyleNum;
+    private int mFootStyleNum;
 
     private int mHeaderNum;
 
@@ -163,17 +164,31 @@ public class NavJavaCodeFragment extends BaseNavigationFragment implements OnRef
     }
 
     private void initDialogView(View view) {
-        final RadioGroup rgStyle = (RadioGroup) view.findViewById(R.id.rgStyle);
+        final RadioGroup rgHeadStyle = (RadioGroup) view.findViewById(R.id.rgHeadStyle);
+        final RadioGroup rgFootStyle = (RadioGroup) view.findViewById(R.id.rgFootStyle);
         final RadioGroup rgHeader = (RadioGroup) view.findViewById(R.id.rgHeader);
         final RadioGroup rgFooter = (RadioGroup) view.findViewById(R.id.rgFooter);
 
-        rgStyle.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        rgHeadStyle.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                for (int i = 0; i < rgStyle.getChildCount(); i++) {
-                    RadioButton rb = (RadioButton) rgStyle.getChildAt(i);
+                for (int i = 0; i < rgHeadStyle.getChildCount(); i++) {
+                    RadioButton rb = (RadioButton) rgHeadStyle.getChildAt(i);
                     if (rb.isChecked()) {
-                        changeStyle(i);
+                        changeHeadStyle(i);
+                        break;
+                    }
+                }
+            }
+        });
+
+        rgFootStyle.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                for (int i = 0; i < rgFootStyle.getChildCount(); i++) {
+                    RadioButton rb = (RadioButton) rgFootStyle.getChildAt(i);
+                    if (rb.isChecked()) {
+                        changeFootStyle(i);
                         break;
                     }
                 }
@@ -206,7 +221,8 @@ public class NavJavaCodeFragment extends BaseNavigationFragment implements OnRef
             }
         });
 
-        ((RadioButton) rgStyle.getChildAt(mStyleNum)).setChecked(true);
+        ((RadioButton) rgHeadStyle.getChildAt(mHeadStyleNum)).setChecked(true);
+        ((RadioButton) rgFootStyle.getChildAt(mFootStyleNum)).setChecked(true);
         ((RadioButton) rgHeader.getChildAt(mHeaderNum)).setChecked(true);
         ((RadioButton) rgFooter.getChildAt(mFooterNum)).setChecked(true);
     }
@@ -252,20 +268,38 @@ public class NavJavaCodeFragment extends BaseNavigationFragment implements OnRef
         }
     }
 
-    private void changeStyle(int i) {
-        mStyleNum = i;
+    private void changeHeadStyle(int i) {
+        mHeadStyleNum = i;
         switch (i) {
             case 0:
-                swipeToLoadLayout.setSwipeStyle(SwipeToLoadLayout.STYLE.CLASSIC);
+                swipeToLoadLayout.setHeadSwipeStyle(SwipeToLoadLayout.STYLE.CLASSIC);
                 break;
             case 1:
-                swipeToLoadLayout.setSwipeStyle(SwipeToLoadLayout.STYLE.ABOVE);
+                swipeToLoadLayout.setHeadSwipeStyle(SwipeToLoadLayout.STYLE.ABOVE);
                 break;
             case 2:
-                swipeToLoadLayout.setSwipeStyle(SwipeToLoadLayout.STYLE.BLEW);
+                swipeToLoadLayout.setHeadSwipeStyle(SwipeToLoadLayout.STYLE.BLEW);
                 break;
             case 3:
-                swipeToLoadLayout.setSwipeStyle(SwipeToLoadLayout.STYLE.SCALE);
+                swipeToLoadLayout.setHeadSwipeStyle(SwipeToLoadLayout.STYLE.SCALE);
+                break;
+        }
+    }
+
+    private void changeFootStyle(int i) {
+        mFootStyleNum = i;
+        switch (i) {
+            case 0:
+                swipeToLoadLayout.setFootSwipeStyle(SwipeToLoadLayout.STYLE.CLASSIC);
+                break;
+            case 1:
+                swipeToLoadLayout.setFootSwipeStyle(SwipeToLoadLayout.STYLE.ABOVE);
+                break;
+            case 2:
+                swipeToLoadLayout.setFootSwipeStyle(SwipeToLoadLayout.STYLE.BLEW);
+                break;
+            case 3:
+                swipeToLoadLayout.setFootSwipeStyle(SwipeToLoadLayout.STYLE.SCALE);
                 break;
         }
     }
