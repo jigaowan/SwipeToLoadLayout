@@ -1164,8 +1164,14 @@ public class SwipeToLoadLayout extends ViewGroup {
             Log.e(TAG,"targetBottom:"+targetBottom);
         }
 
+        if (mHeadStyle == STYLE.BLEW || mHeadStyle == STYLE.SCALE || mFootStyle == STYLE.BLEW || mFootStyle == STYLE.SCALE) {
+            if (mTargetView != null) {
+                mTargetView.bringToFront();
+            }
+        }
+
         if (mHeadStyle == STYLE.CLASSIC
-                || mHeadStyle == STYLE.ABOVE) {
+                || mHeadStyle == STYLE.ABOVE ) {
             if (mHeaderView != null) {
                 mHeaderView.bringToFront();
             }
@@ -1175,12 +1181,6 @@ public class SwipeToLoadLayout extends ViewGroup {
                 || mFootStyle == STYLE.ABOVE) {
             if (mFooterView != null) {
                 mFooterView.bringToFront();
-            }
-        }
-
-        if (mHeadStyle == STYLE.BLEW || mHeadStyle == STYLE.SCALE || mFootStyle == STYLE.BLEW || mFootStyle == STYLE.SCALE) {
-            if (mTargetView != null) {
-                mTargetView.bringToFront();
             }
         }
 
